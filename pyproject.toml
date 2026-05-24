@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wechat-opencode"
+version = "0.1.0"
+description = "WeChat remote control bridge for OpenCode CLI"
+requires-python = ">=3.10"
+dependencies = [
+    "wcferry>=39.5.1.0",
+    "pyyaml>=6.0",
+    "requests>=2.28",
+    "flask>=2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+]
+
+[tool.setuptools.packages.find]
+include = ["wechat_opencode*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

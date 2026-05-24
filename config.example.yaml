@@ -1,0 +1,57 @@
+# WeChat-OpenCode Configuration
+# Copy this file to config.yaml and modify as needed.
+# All fields have defaults — this file is optional.
+
+# Bot backend: "wechat" (default, uses WeChatFerry) or "feishu" (Feishu bot API)
+bot_type: "wechat"
+
+opencode:
+  # Directory where opencode operates (your project root)
+  project_dir: "C:\\Users\\1"
+
+  # Port for opencode serve (must match --port used by serve)
+  serve_port: 4096
+
+  # Host for opencode serve
+  serve_host: "127.0.0.1"
+
+  # Kill command execution after this many seconds
+  command_timeout: 300
+
+  # Output format
+  format: "default"
+
+wechat:
+  # Only messages starting with this prefix trigger opencode
+  prefix: "/oc"
+
+  # WeChat ID for File Transfer Assistant (fallback when bot contact not found)
+  filehelper_wxid: "filehelper"
+
+  # Contact name or remark that acts as the "bot" (for WeChat mode)
+  bot_remark: "机器人"
+
+  # Maximum characters per WeChat message (split output if longer)
+  max_message_length: 4000
+
+  # Maximum number of split parts; excess is truncated with a note
+  max_parts: 10
+
+feishu:
+  # Feishu bot credentials (only needed when bot_type: "feishu")
+  # Create an app at https://open.feishu.cn/app
+  app_id: ""
+  app_secret: ""
+
+service:
+  # Seconds between heartbeat messages during execution
+  heartbeat_interval: 30
+
+  # Restart the service automatically on crash
+  auto_restart: true
+
+  # Logging level: DEBUG, INFO, WARN, ERROR
+  log_level: "INFO"
+
+  # Log file name (relative to project directory)
+  log_file: "wechat_opencode.log"
