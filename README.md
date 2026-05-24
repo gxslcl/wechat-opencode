@@ -54,7 +54,7 @@ cd wechat-opencode
 
 # 创建虚拟环境
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\Activate.ps1
 
 # 安装依赖
 pip install -r requirements.txt
@@ -85,6 +85,10 @@ python -m wechat_opencode
 - 选择模型（Flash / Pro）
 
 配置完成后服务自动启动，浏览器打开 `http://127.0.0.1:8080` 管理面板。
+
+配置之后关闭中断和配置页面 从新启动
+
+.\scripts\run_dev.ps1^C
 
 ### 4. 开始使用
 
