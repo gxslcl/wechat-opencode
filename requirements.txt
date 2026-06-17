@@ -7,6 +7,7 @@ flask>=2.3
 schedule>=1.2
 python-pptx>=1.0
 pillow>=10.0
+easyocr>=1.7
 
 # Dev
 pytest>=8.0
