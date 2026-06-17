@@ -1,5 +1,6 @@
 """Tests for wechat_opencode.core."""
 
+import threading
 import time
 from unittest.mock import MagicMock, patch
 
@@ -30,6 +31,12 @@ class TestWeChatOpenCodePipeline:
         # Mock bot and queue
         app._bot = MagicMock()
         app._exec_queue = MagicMock()
+
+        # Make _queue_incoming call _process_incoming synchronously
+        # (production uses a background thread for Feishu 3s ACK timeout)
+        def _sync_queue(message, raw_content):
+            app._process_incoming(message, raw_content, threading.Event())
+        app._queue_incoming = _sync_queue
 
         app._handle_message(msg)
 
@@ -94,6 +101,11 @@ class TestWeChatOpenCodePipeline:
         app._bot = MagicMock()
         app._exec_queue = MagicMock()
         app._restart_services = MagicMock()
+
+        # Make _queue_incoming call _process_incoming synchronously
+        def _sync_queue(message, raw_content):
+            app._process_incoming(message, raw_content, threading.Event())
+        app._queue_incoming = _sync_queue
 
         app._handle_message(msg)
 

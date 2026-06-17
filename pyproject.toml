@@ -5,20 +5,41 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wechat-opencode"
 version = "0.1.0"
-description = "WeChat remote control bridge for OpenCode CLI"
+description = "A Feishu/WeChat bot that bridges chat messages to OpenCode AI — control your PC via chat"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["feishu", "opencode", "ai", "bot", "chat"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+]
+
 dependencies = [
+    "lark-oapi>=1.6.8",
     "wcferry>=39.5.1.0",
     "pyyaml>=6.0",
     "requests>=2.28",
     "flask>=2.3",
+    "schedule>=1.2",
+    "python-pptx>=1.0",
+    "pillow>=10.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yourname/wechat-opencode"
+Source = "https://github.com/yourname/wechat-opencode"
+BugTracker = "https://github.com/yourname/wechat-opencode/issues"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "pytest-mock>=3.12",
+    "playwright>=1.40",
 ]
+feishu = []
+wechat = ["wcferry>=39.5.1.0"]
 
 [tool.setuptools.packages.find]
 include = ["wechat_opencode*"]

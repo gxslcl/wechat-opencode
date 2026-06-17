@@ -2,46 +2,31 @@
 # Copy this file to config.yaml and modify as needed.
 # All fields have defaults — this file is optional.
 
-# Bot backend: "wechat" (default, uses WeChatFerry) or "feishu" (Feishu bot API)
-bot_type: "wechat"
+# Bot backend: "feishu" (Feishu) or "wechat" (WeChatFerry)
+bot_type: "feishu"
+
+# DeepSeek API Key (也可以用环境变量 DEEPSEEK_API_KEY 设置)
+deepseek_api_key: "sk-..."
 
 opencode:
   # Directory where opencode operates (your project root)
-  project_dir: "C:\\Users\\1"
+  project_dir: "C:\\Users\\<YOUR_USERNAME>"
 
-  # Port for opencode serve (must match --port used by serve)
-  serve_port: 4096
+  # Ports for the two opencode serve instances
+  serve_port: 4097
+  worker_serve_port: 4098
 
   # Host for opencode serve
   serve_host: "127.0.0.1"
 
   # Kill command execution after this many seconds
-  command_timeout: 300
-
-  # Output format
-  format: "default"
-
-wechat:
-  # Only messages starting with this prefix trigger opencode
-  prefix: "/oc"
-
-  # WeChat ID for File Transfer Assistant (fallback when bot contact not found)
-  filehelper_wxid: "filehelper"
-
-  # Contact name or remark that acts as the "bot" (for WeChat mode)
-  bot_remark: "机器人"
-
-  # Maximum characters per WeChat message (split output if longer)
-  max_message_length: 4000
-
-  # Maximum number of split parts; excess is truncated with a note
-  max_parts: 10
+  command_timeout: 600
 
 feishu:
-  # Feishu bot credentials (only needed when bot_type: "feishu")
+  # Feishu bot credentials
   # Create an app at https://open.feishu.cn/app
-  app_id: ""
-  app_secret: ""
+  app_id: "cli_xxx"
+  app_secret: "xxx"
 
 service:
   # Seconds between heartbeat messages during execution

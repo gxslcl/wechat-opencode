@@ -12,6 +12,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.pyc
 
 # IDE
 .vscode/
@@ -20,12 +21,21 @@ build/
 
 # Project
 .sisyphus/
+.mimocode/
+.omo/
+.omo/
 wechat_opencode.log
 *.log
 data/
 logs/
-.playwright-mcp/
+*.pptx
+*.png
+*.jpg
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated scripts (user-created during sessions)
+generate_*.py
+find_*.py

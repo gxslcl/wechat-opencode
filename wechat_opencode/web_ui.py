@@ -23,6 +23,7 @@ _get_tasks: Any = lambda: []
 _get_costs: Any = lambda: ""
 _get_model: Any = lambda: ""
 _exec_queue: Any = None
+_bus: Any = None
 
 app = Flask(__name__)
 _state = {"local_sent": set(), "started_at": time.time(), "sent_count": 0}
@@ -335,40 +336,32 @@ def index():
 def api_messages():
     messages = []
     worker_status = "空闲"
-    sent_idx = _state.get("sent_count", 0)
 
-    if _supervisor_id and _session:
+    if _bus is not None:
         try:
-            raw = _session.poll_messages(_supervisor_id, "")
+            raw = _bus.get_messages(since_id="", limit=50)
         except Exception:
             raw = []
 
-        for i, msg in enumerate(raw):
-            if i < sent_idx:
-                continue
-
+        for msg in raw:
             text = msg.get("text", "").strip()
-            role = msg.get("role", "")
+            bus_role = msg.get("role", "")
+            source = msg.get("source", "")
 
-            if not text or text == "收到" or any(m in text for m in SKIP_MARKERS):
+            if not text or any(m in text for m in SKIP_MARKERS):
                 continue
 
-            if role == "user":
-                text = _clean_message(text, role)
-
-            if role == "user" and text in _state.get("local_sent", set()):
+            if bus_role == "user" and text in _state.get("local_sent", set()):
                 continue
 
-            label = "📱 手机" if role == "user" else "🤖 监工"
+            label = "📱 手机" if source == "feishu" else ("📱 你" if bus_role == "user" else "🤖 监工")
             messages.append({
-                "id": str(len(messages) + int(time.time() * 1000)),
+                "id": msg.get("id", str(time.time())),
                 "text": text,
-                "role": "bot" if role == "assistant" else "user",
+                "role": "bot" if bus_role == "assistant" else "user",
                 "label": label,
-                "timestamp": time.time(),
+                "timestamp": msg.get("timestamp", time.time()),
             })
-
-        _state["sent_count"] = len(raw)
 
     try:
         ws = _get_worker_status()
@@ -418,7 +411,7 @@ def api_worker_log():
 def api_send():
     data = request.get_json()
     text = data.get("text", "").strip()
-    if not text or not _exec_queue:
+    if not text:
         return jsonify({"ok": False}), 400
 
     if "local_sent" not in _state:
@@ -427,17 +420,15 @@ def api_send():
     if len(_state["local_sent"]) > 200:
         _state["local_sent"] = set(list(_state["local_sent"])[-100:])
 
-    from wechat_opencode.types import Command, WxMessage
-    cmd = Command(
-        original_message=WxMessage(
-            id="web", type=1, sender="web", roomid="",
-            content=text, timestamp=int(time.time()),
-        ),
-        content=text,
-        timestamp=int(time.time()),
-        session_id=_supervisor_id,
-    )
-    _exec_queue.submit(cmd)
+    # Publish to message bus — core's subscriber will pick it up
+    if _bus is not None:
+        _bus.publish("incoming", {
+            "channel": "incoming",
+            "text": text,
+            "role": "user",
+            "source": "web",
+            "sender": "web",
+        })
     return jsonify({"ok": True})
 
 
@@ -459,9 +450,10 @@ def start_server(
     costs_fn: Any,
     model_fn: Any,
     queue: Any,
+    bus: Any = None,
     port: int = 8080,
 ):
-    global _session, _supervisor_id, _get_worker_status, _get_tasks, _get_costs, _get_model, _exec_queue
+    global _session, _supervisor_id, _get_worker_status, _get_tasks, _get_costs, _get_model, _exec_queue, _bus
     _session = session
     _supervisor_id = supervisor_id
     _get_worker_status = worker_status_fn
@@ -469,6 +461,7 @@ def start_server(
     _get_costs = costs_fn
     _get_model = model_fn
     _exec_queue = queue
+    _bus = bus
 
     t = threading.Thread(target=lambda: app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False), daemon=True)
     t.start()

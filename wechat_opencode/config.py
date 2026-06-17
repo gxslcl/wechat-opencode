@@ -65,6 +65,7 @@ class ServiceConfig:
 class Config:
     """Top-level configuration."""
     bot_type: BotType = BotType.WECHAT
+    deepseek_api_key: str = ""
     opencode: OpenCodeConfig = field(default_factory=OpenCodeConfig)
     wechat: WeChatConfig = field(default_factory=WeChatConfig)
     feishu: FeishuConfig = field(default_factory=FeishuConfig)
@@ -87,6 +88,7 @@ def _dict_to_config(d: dict) -> Config:
 
     return Config(
         bot_type=bot_type,
+        deepseek_api_key=d.get("deepseek_api_key", "") or os.environ.get("DEEPSEEK_API_KEY", ""),
         opencode=OpenCodeConfig(
             project_dir=oc.get("project_dir", str(Path.home())),
             serve_port=oc.get("serve_port", DEFAULT_SERVE_PORT),

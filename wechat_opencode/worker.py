@@ -95,6 +95,19 @@ class WorkerManager:
             "• 自动修复 — 出错先自查原因，再换方案\n"
             "• 成本意识 — 重试不超过3次，超过汇报原因\n"
             "• 安全第一 — 删除/覆盖前先备份\n\n"
+            "═══ 自扩展能力 (永不放弃) ═══\n"
+            "• 永不放弃 — 遇困难主动寻求方案，绝不说\"我做不到\"，先尝试3种以上方法再汇报\n"
+            "• 自动安装 — 缺少工具/包时自动 pip install / npm install，无需询问用户\n"
+            "• 能力寻路链:\n"
+            "  缺工具/包 → 搜索解决方案 → 自动安装 → 重试\n"
+            "    仍失败 → 换不同方法/不同工具 → 再尝试\n"
+            "    仍失败 → 网上搜索替代方案 → 再尝试\n"
+            "    仍失败 → [确认: 已尝试A/B/C共3+方案，仍无法完成。原因:X 建议:Y]\n"
+            "• 需确认的场景 (仅以下情况使用 [确认:]):\n"
+            "  新MCP服务器(需改配置+重启Worker) → [确认: 需安装X MCP，确认?]\n"
+            "  付费服务/API Key → [确认: 需要付费API X，确认?]\n"
+            "  不可逆破坏性操作 → [确认: 即将执行X(不可逆)，确认? 已备份]\n"
+            "• 最终确认 — 执行破坏性操作前，显示变更摘要并用 [确认: ...] 等待批准\n\n"
             "═══ 执行循环 ═══\n"
             "收到任务后按以下流程，每步做完立即汇报:\n\n"
             "1. 分析需求 → 列出完成目标所需的步骤清单\n"
@@ -120,7 +133,12 @@ class WorkerManager:
             "• 删除文件前先备份 (copy → 确认副本存在 → 再删除)\n"
             "• 覆盖文件前先备份 (copy 原文件 → .bak → 再写入)\n"
             "• 修改系统配置前先导出原配置\n"
-            "• 不确定的操作 → [确认: 问题 选项:A/B]\n\n"
+            "• 不确定的操作 → [确认: 问题 选项:A/B]\n"
+            "• 需要打开应用/窗口时 → 输出 [TASK: 打开/聚焦 XX 应用]，由监工执行。\n"
+            "  不要自行用 start/subprocess/Shell.Application 等命令启动应用。\n"
+            "• 创建/生成的文件（PPT、文档、图片、报告等）统一保存到桌面路径。\n"
+            "  桌面路径: C:\\Users\\1\\Desktop\\\n"
+            "  如果用户指定了其他路径则按用户要求。\n\n"
             "═══ 协议格式 ═══\n"
             "  [进度: 步骤2/5 正在安装 pandas (第1次尝试)]\n"
             "  [进度: 步骤3/5 已创建 app.py → 验证: 语法正确]\n"
@@ -139,6 +157,8 @@ class WorkerManager:
         self._cancel_requested = False
         self._thread = threading.Thread(target=self._poll_loop, daemon=True)
         self._thread.start()
+        # Immediate feedback
+        self._on_notify(f"⏳ 开始执行: {task[:60]}...")
         logger.info("Worker started: %s → %s", sid, task[:60])
         return True
 
@@ -194,6 +214,8 @@ class WorkerManager:
         self._cancel_requested = False
         self._thread = threading.Thread(target=self._poll_loop, daemon=True)
         self._thread.start()
+        # Immediate feedback so user knows work started
+        self._on_notify(f"⏳ 开始执行: {task[:60]}...")
         logger.info("Worker started with custom prompt: %s", sid)
         return True
 

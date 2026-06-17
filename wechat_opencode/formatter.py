@@ -53,9 +53,19 @@ class ResultFormatter:
         return f"\u274c \u9519\u8bef: {error_msg}"
 
     def format_start(self, command: str) -> str:
-        """Return a start notification. Truncates long commands to 50 chars."""
+        """Return a start notification with estimated duration."""
         display = command[:50] + "..." if len(command) > 50 else command
-        return f"\U0001f680 \u6267\u884c: {display}"
+        # Estimate duration based on content length
+        length = len(command)
+        if length > 1500:
+            eta = "3-5分钟"
+        elif length > 600:
+            eta = "1-3分钟"
+        elif length > 200:
+            eta = "30-60秒"
+        else:
+            eta = "10-30秒"
+        return f"\U0001f680 \u6267\u884c: {display}\n\u23f3 \u9884\u8ba1: {eta}"
 
     def format_timeout(self, command: str, timeout: int) -> str:
         """Return a timeout notification."""

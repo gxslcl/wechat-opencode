@@ -228,15 +228,32 @@ def create_app(config_path: str) -> Flask:
         try:
             import requests
             r = requests.get(
-                "https://api.deepseek.com/models",
+                "https://api.deepseek.com/user/balance",
                 headers={"Authorization": f"Bearer {key}"},
-                timeout=10,
+                timeout=15,
             )
             if r.status_code == 200:
-                return jsonify({"ok": True})
-            return jsonify({"ok": False, "error": f"API 返回 {r.status_code}: {r.text[:100]}"})
+                balance = r.json()
+                if balance.get("is_available", False) is not False:
+                    return jsonify({"ok": True, "balance": balance})
+                return jsonify({"ok": False, "error": "账户不可用，请检查余额"})
+            elif r.status_code == 400:
+                # /user/balance might not exist on all accounts, try /models as fallback
+                r2 = requests.get(
+                    "https://api.deepseek.com/models",
+                    headers={"Authorization": f"Bearer {key}"},
+                    timeout=10,
+                )
+                if r2.status_code == 200:
+                    return jsonify({"ok": True})
+                return jsonify({"ok": False, "error": f"API 返回 {r2.status_code}"})
+            return jsonify({"ok": False, "error": f"API 返回 {r.status_code}"})
+        except requests.exceptions.ConnectTimeout:
+            return jsonify({"ok": False, "error": "连接超时，请检查网络（可能需要代理）"})
+        except requests.exceptions.ConnectionError:
+            return jsonify({"ok": False, "error": "连接失败（可能需要代理访问 api.deepseek.com）"})
         except Exception as e:
-            return jsonify({"ok": False, "error": f"连接失败: {e}"})
+            return jsonify({"ok": False, "error": f"验证失败: {e}"})
 
     @app.route("/api/validate-feishu", methods=["POST"])
     def api_validate_feishu():
@@ -273,12 +290,13 @@ def create_app(config_path: str) -> Flask:
         # Save config.yaml
         yaml_config = {
             "bot_type": "feishu",
+            "deepseek_api_key": apikey,
             "opencode": {
                 "project_dir": workdir,
                 "serve_port": 4097,
                 "worker_serve_port": 4098,
                 "serve_host": "127.0.0.1",
-                "command_timeout": 300,
+                "command_timeout": 600,
             },
             "feishu": {
                 "app_id": app_id,

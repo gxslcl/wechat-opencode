@@ -261,6 +261,48 @@ class OpenCodeSession:
         # Return only the NEW messages, and track the latest ID
         return results
 
+    def get_recent_messages(self, session_id: str, limit: int = 5) -> str:
+        """Fetch the most recent N messages and format them as context text.
+
+        Returns formatted strings like::
+
+            用户: 你叫什么名字？
+            助手: 我叫小助手！
+
+        Returns an empty string on failure or if no messages exist.
+        """
+        if not session_id or not self._server_url:
+            return ""
+
+        try:
+            messages = self._api_get(f"/session/{session_id}/message", timeout=10)
+        except Exception:
+            return ""
+
+        if not messages:
+            return ""
+
+        formatted = []
+        for msg in messages[-limit:]:
+            info = msg.get("info", {})
+            role = info.get("role", "")
+            for part in msg.get("parts", []):
+                if part.get("type") == "text" and part.get("text"):
+                    prefix = "用户" if role == "user" else "助手"
+                    formatted.append(f"{prefix}: {part['text']}")
+
+        return "\n".join(formatted)
+
+    def get_message_count(self, session_id: str) -> int:
+        """Return the number of messages in a session (approximate context usage)."""
+        if not session_id or not self._server_url:
+            return 0
+        try:
+            messages = self._api_get(f"/session/{session_id}/message", timeout=5)
+            return len(messages) if isinstance(messages, list) else 0
+        except Exception:
+            return 0
+
     def get_session_status(self, session_id: str) -> dict:
         """Quick status check on a session (running/idle)."""
         try:
